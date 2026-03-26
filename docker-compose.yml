@@ -1,0 +1,46 @@
+services:
+  node1:
+    image: ubuntu:22.04
+    container_name: node1
+    hostname: node1
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      manet:
+        ipv4_address: 172.28.0.11
+    command: ["bash", "-c", "sleep infinity"]
+
+  node2:
+    image: ubuntu:22.04
+    container_name: node2
+    hostname: node2
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      manet:
+        ipv4_address: 172.28.0.12
+    command: ["bash", "-c", "sleep infinity"]
+
+  node3:
+    image: ubuntu:22.04
+    container_name: node3
+    hostname: node3
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      manet:
+        ipv4_address: 172.28.0.13
+    command: ["bash", "-c", "sleep infinity"]
+
+networks:
+  manet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24
