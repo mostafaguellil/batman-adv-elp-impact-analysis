@@ -74,11 +74,11 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\"node1|node2|node3\"}[2m])) * 100",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{cpu=\"total\",id=~\"/docker/[a-f0-9]{64}\"}[2m])) * 100",
           "refId": "A"
         }
       ],
-      "title": "Node Containers CPU",
+      "title": "All leaf containers CPU (sum rate × 100)",
       "type": "gauge"
     },
     {
@@ -163,17 +163,17 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "expr": "sum by (name) (rate(container_network_receive_bytes_total{name=~\"node1|node2|node3\",interface=\"eth0\"}[1m]))",
-          "legendFormat": "{{name}} rx",
+          "expr": "topk(12, sum by (id) (rate(container_network_receive_bytes_total{id=~\"/docker/[a-f0-9]{64}\",interface=\"eth0\"}[1m])))",
+          "legendFormat": "{{id}} rx",
           "refId": "A"
         },
         {
-          "expr": "sum by (name) (rate(container_network_transmit_bytes_total{name=~\"node1|node2|node3\",interface=\"eth0\"}[1m]))",
-          "legendFormat": "{{name}} tx",
+          "expr": "topk(12, sum by (id) (rate(container_network_transmit_bytes_total{id=~\"/docker/[a-f0-9]{64}\",interface=\"eth0\"}[1m])))",
+          "legendFormat": "{{id}} tx",
           "refId": "B"
         }
       ],
-      "title": "Container Network Traffic (eth0)",
+      "title": "Container network on eth0 (top containers by id)",
       "type": "timeseries"
     },
     {
@@ -226,12 +226,12 @@
       "pluginVersion": "11.2.2",
       "targets": [
         {
-          "expr": "sum by (name) (container_memory_working_set_bytes{name=~\"node1|node2|node3\"})",
-          "legendFormat": "{{name}}",
+          "expr": "topk(12, sum by (id) (container_memory_working_set_bytes{id=~\"/docker/[a-f0-9]{64}\"}))",
+          "legendFormat": "{{id}}",
           "refId": "A"
         }
       ],
-      "title": "Node Containers Memory Working Set",
+      "title": "Container memory working set (top by id)",
       "type": "timeseries"
     }
   ],
@@ -254,6 +254,6 @@
   "timezone": "",
   "title": "MANET Overview",
   "uid": "manet-overview",
-  "version": 1,
+  "version": 3,
   "weekStart": ""
 }

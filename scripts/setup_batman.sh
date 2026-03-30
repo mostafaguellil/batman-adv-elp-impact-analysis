@@ -5,7 +5,18 @@ NODES=(node1 node2 node3)
 BAT_IPS=(10.0.0.1/24 10.0.0.2/24 10.0.0.3/24)
 UNDERLAY_IF="eth0"
 OS_NAME="$(uname -s)"
-MODE="${1:-auto}" # auto | batman | fallback
+SKIP_COMPOSE=0
+POSITIONAL=()
+
+for arg in "$@"; do
+  if [[ "${arg}" == "--skip-compose" ]]; then
+    SKIP_COMPOSE=1
+  else
+    POSITIONAL+=("${arg}")
+  fi
+done
+
+MODE="${POSITIONAL[0]:-auto}" # auto | batman | fallback
 
 require_cmd() {
   local cmd="$1"
@@ -19,7 +30,7 @@ require_cmd() {
 
 if [[ "${MODE}" != "auto" && "${MODE}" != "batman" && "${MODE}" != "fallback" ]]; then
   echo "ERROR: Invalid mode '${MODE}'."
-  echo "Usage: ./scripts/setup_batman.sh [auto|batman|fallback]"
+  echo "Usage: ./scripts/setup_batman.sh [auto|batman|fallback] [--skip-compose]"
   exit 1
 fi
 
@@ -45,35 +56,40 @@ if [[ "${MODE}" == "auto" ]]; then
   fi
 fi
 
-echo "==> Starting containers"
-for node in "${NODES[@]}"; do
-  if docker container inspect "${node}" >/dev/null 2>&1; then
-    echo "==> Removing stale container: ${node}"
-    docker rm -f "${node}" >/dev/null
-  fi
-done
-docker compose up -d
+if [[ "${SKIP_COMPOSE}" -eq 0 ]]; then
+  echo "==> Starting containers"
+  for node in "${NODES[@]}"; do
+    if docker container inspect "${node}" >/dev/null 2>&1; then
+      echo "==> Removing stale container: ${node}"
+      docker rm -f "${node}" >/dev/null
+    fi
+  done
+  docker compose up -d
+else
+  echo "==> Skipping docker compose (stack assumed already up)"
+fi
 
 if [[ "${MODE}" == "batman" ]]; then
-  require_cmd sudo "Install sudo or run this script as root."
-  require_cmd modprobe "Install kmod package on host and retry."
   if [[ "${OS_NAME}" != "Linux" ]]; then
-    echo "ERROR: 'batman' mode requires Linux host kernel."
-    echo "Hint: use './scripts/setup_batman.sh fallback' on macOS for immediate Docker testing."
-    exit 1
+    echo "WARNING: 'batman' mode requires Linux host kernel."
+    echo "Hint: on macOS it cannot load batman-adv; switching to 'fallback' so you can keep testing ping/iperf/tcpdump."
+    MODE="fallback"
+  else
+    require_cmd sudo "Install sudo or run this script as root."
+    require_cmd modprobe "Install kmod package on host and retry."
+    if ! sudo -n true >/dev/null 2>&1; then
+      echo "ERROR: sudo requires a password or is unavailable for this user."
+      echo "Hint: run 'sudo -v' first, then rerun this script."
+      exit 1
+    fi
+    if ! modinfo batman-adv >/dev/null 2>&1; then
+      echo "ERROR: Kernel module metadata for 'batman-adv' was not found."
+      echo "Hint: install a kernel package that includes batman-adv, then retry."
+      exit 1
+    fi
+    echo "==> Loading batman-adv module on host"
+    sudo modprobe batman-adv
   fi
-  if ! sudo -n true >/dev/null 2>&1; then
-    echo "ERROR: sudo requires a password or is unavailable for this user."
-    echo "Hint: run 'sudo -v' first, then rerun this script."
-    exit 1
-  fi
-  if ! modinfo batman-adv >/dev/null 2>&1; then
-    echo "ERROR: Kernel module metadata for 'batman-adv' was not found."
-    echo "Hint: install a kernel package that includes batman-adv, then retry."
-    exit 1
-  fi
-  echo "==> Loading batman-adv module on host"
-  sudo modprobe batman-adv
 fi
 
 echo "==> Installing tools in containers (batctl, iproute2, ping, iperf3, tcpdump)"
