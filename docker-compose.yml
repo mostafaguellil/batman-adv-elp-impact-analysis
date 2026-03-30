@@ -8,8 +8,7 @@ services:
       - NET_ADMIN
       - SYS_MODULE
     networks:
-      manet:
-        ipv4_address: 172.28.0.11
+      - manet
     command: ["bash", "-c", "sleep infinity"]
 
   node2:
@@ -21,8 +20,7 @@ services:
       - NET_ADMIN
       - SYS_MODULE
     networks:
-      manet:
-        ipv4_address: 172.28.0.12
+      - manet
     command: ["bash", "-c", "sleep infinity"]
 
   node3:
@@ -34,13 +32,63 @@ services:
       - NET_ADMIN
       - SYS_MODULE
     networks:
-      manet:
-        ipv4_address: 172.28.0.13
+      - manet
     command: ["bash", "-c", "sleep infinity"]
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: cadvisor
+    privileged: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    networks:
+      - manet
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      - cadvisor
+    networks:
+      - manet
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - manet
 
 networks:
   manet:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/24
+
+volumes:
+  grafana-data:

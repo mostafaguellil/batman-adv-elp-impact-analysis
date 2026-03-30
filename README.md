@@ -33,6 +33,12 @@ cd batman-adv-elp-impact-analysis
 ./scripts/setup_batman.sh
 ```
 
+Modes disponibles:
+
+- `./scripts/setup_batman.sh auto` (defaut): Linux -> BATMAN-Adv, macOS -> fallback Docker
+- `./scripts/setup_batman.sh batman`: force le mode BATMAN-Adv (Linux uniquement)
+- `./scripts/setup_batman.sh fallback`: test rapide Docker (connectivite/iperf/tcpdump) sans module batman-adv
+
 ## Verification manuelle
 
 ### 1) Etat des conteneurs
@@ -40,6 +46,18 @@ cd batman-adv-elp-impact-analysis
 ```bash
 docker compose ps
 ```
+
+### 1-bis) Grafana / Prometheus
+
+```bash
+docker compose up -d grafana prometheus cadvisor
+```
+
+- Grafana: `http://localhost:3000` (login par defaut: `admin` / `admin`)
+- Prometheus: `http://localhost:9090`
+- cAdvisor: `http://localhost:8080`
+
+Le dashboard `MANET Overview` et la datasource Prometheus sont provisionnes automatiquement.
 
 ### 2) Verification bat0
 
@@ -92,3 +110,6 @@ docker compose down
 - `Current host: Darwin`: execute sur macOS, passer sur Linux/VM Linux
 - `modprobe: command not found`: `kmod` manquant sur l hote Linux
 - `Module batman-adv not found`: noyau Linux sans support `batman-adv`
+- `docker compose is not available`: installer le plugin Docker Compose sur la VM Linux
+- `sudo requires a password`: executer `sudo -v` puis relancer le script
+- `Cannot connect to Docker daemon`: demarrer Docker Desktop/Engine puis relancer
