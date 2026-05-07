@@ -35,6 +35,90 @@ services:
       - manet
     command: ["bash", "-c", "sleep infinity"]
 
+  node4:
+    image: ubuntu:22.04
+    container_name: node4
+    hostname: node4
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      - manet
+    command: ["bash", "-c", "sleep infinity"]
+
+  node5:
+    image: ubuntu:22.04
+    container_name: node5
+    hostname: node5
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      - manet
+    command: ["bash", "-c", "sleep infinity"]
+
+  node6:
+    image: ubuntu:22.04
+    container_name: node6
+    hostname: node6
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      - manet
+    command: ["bash", "-c", "sleep infinity"]
+
+  node7:
+    image: ubuntu:22.04
+    container_name: node7
+    hostname: node7
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      - manet
+    command: ["bash", "-c", "sleep infinity"]
+
+  node8:
+    image: ubuntu:22.04
+    container_name: node8
+    hostname: node8
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      - manet
+    command: ["bash", "-c", "sleep infinity"]
+
+  node9:
+    image: ubuntu:22.04
+    container_name: node9
+    hostname: node9
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      - manet
+    command: ["bash", "-c", "sleep infinity"]
+
+  node10:
+    image: ubuntu:22.04
+    container_name: node10
+    hostname: node10
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    networks:
+      - manet
+    command: ["bash", "-c", "sleep infinity"]
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor

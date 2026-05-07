@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-NODES=(node1 node2 node3)
-BAT_IPS=(10.0.0.1/24 10.0.0.2/24 10.0.0.3/24)
+NODES=(node1 node2 node3 node4 node5 node6 node7 node8 node9 node10)
+BAT_IPS=(
+  10.0.0.1/24
+  10.0.0.2/24
+  10.0.0.3/24
+  10.0.0.4/24
+  10.0.0.5/24
+  10.0.0.6/24
+  10.0.0.7/24
+  10.0.0.8/24
+  10.0.0.9/24
+  10.0.0.10/24
+)
 UNDERLAY_IF="eth0"
 OS_NAME="$(uname -s)"
 SKIP_COMPOSE=0
@@ -136,6 +147,7 @@ fi
 echo "==> Connectivity test over 10.0.0.0/24"
 docker exec node1 bash -lc "ping -c 3 10.0.0.2"
 docker exec node1 bash -lc "ping -c 3 10.0.0.3"
+docker exec node1 bash -lc "ping -c 3 10.0.0.10"
 
 echo "==> Optional: start iperf3 server on node2"
 echo "docker exec -d node2 bash -lc 'iperf3 -s'"
